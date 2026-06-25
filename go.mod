@@ -1,4 +1,3 @@
-module github.com/Tones12/Blog-Aggregator
+module github.com/tones12/blog-aggregator
 
 go 1.26.1
-
