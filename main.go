@@ -1,11 +1,19 @@
 package main
 
 import (
-	"github.com/tones12/blog-aggregator/internal/config"
-	"fmt"
 	"log"
 	"os"
+	"database/sql"
+
+	_ "github.com/lib/pq"
+	"github.com/tones12/blog-aggregator/internal/config"
+	"github.com/tones12/blog-aggregator/internal/database"
 )
+
+type state struct {
+	db *database.Queries
+	cfg *config.Config
+}
 
 func main() {
 	cfg, err := config.Read()
@@ -13,25 +21,32 @@ func main() {
     	log.Fatalf("error reading config: %v", err)
 	}
 	
-	newState := state{cfg: &cfg}
-
-	newCommands := commands{commandMap: make(map[string]func(*state, command) error)}
-
-	newCommands.register("login", handlerLogin)
-
-	args := os.Args
-
-	if len(args) < 2 {
-		fmt.Print("Error, not enough arguments provided\n")
-		os.Exit(1)
-	}
-	commandName := args[1]
-	argSlice := args[2:]
-
-	newCommand := command{name: commandName, args: argSlice}
-
-	err = newCommands.run(&newState, newCommand)
+	db, err := sql.Open("postgres", cfg.DbUrl)
 	if err != nil {
-		log.Fatalf("Error: %v", err)
+		log.Fatalf("error opening database: %v", err)
+	}
+
+	dbQueries := database.New(db)
+
+	programState := &state{
+		db:		dbQueries,
+		cfg:	&cfg,
+	}
+
+	cmds := commands{registeredCommands: make(map[string]func(*state, command) error)}
+
+	cmds.register("login", handlerLogin)
+	cmds.register("register", handlerRegister)
+
+	if len(os.Args) < 2 {
+		log.Fatal("Usage: cli <command> [args...]")
+	}
+
+	cmdName := os.Args[1]
+	cmdArgs := os.Args[2:]
+
+	err = cmds.run(programState, command{Name: cmdName, Args:cmdArgs})
+	if err != nil {
+		log.Fatal(err)
 	}
 }
