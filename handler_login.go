@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 )
 
 func handlerLogin(s *state, cmd command) error {

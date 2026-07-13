@@ -9,18 +9,13 @@ import (
 	"github.com/tones12/blog-aggregator/internal/database"
 )
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 1 {
 		return fmt.Errorf("usage: %s", cmd.Name)
 	}
 	
 	url := cmd.Args[0]
 	
-	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("error getting user: %w", err)
-	}
-
 	feedID, err := s.db.GetFeedID(context.Background(), url)
 	if err != nil {
 		return fmt.Errorf("error getting feed ID: %w", err)
@@ -30,7 +25,7 @@ func handlerFollow(s *state, cmd command) error {
 		ID:			uuid.New(),
 		CreatedAt:	time.Now().UTC(),
 		UpdatedAt:	time.Now().UTC(),
-		UserID:		currentUser.ID,
+		UserID:		user.ID,
 		FeedID:		feedID,
 	})
 	if err != nil {
@@ -39,7 +34,7 @@ func handlerFollow(s *state, cmd command) error {
 	
 	fmt.Println("Feed successfully followed!")
 	
-	fmt.Printf("Feed: %v\nFollowed by: %v\n", feedFollow.FeedName, currentUser)
+	fmt.Printf("Feed: %v\nFollowed by: %v\n", feedFollow.FeedName, user.Name)
 
 	return nil
 }
