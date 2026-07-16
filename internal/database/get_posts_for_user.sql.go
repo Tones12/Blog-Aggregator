@@ -33,7 +33,7 @@ type GetPostsForUserRow struct {
 	Title       sql.NullString
 	Url         string
 	Description sql.NullString
-	PublishedAt time.Time
+	PublishedAt sql.NullTime
 	FeedID      uuid.UUID
 	ID_2        uuid.UUID
 	CreatedAt_2 time.Time
