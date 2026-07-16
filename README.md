@@ -16,47 +16,98 @@ You can install the `gator` CLI tool globally on your system using the `go insta
 If you are pulling from a remote repository:
 ```bash
 go install [github.com/yourusername/gator@latest](https://github.com/yourusername/gator@latest)
+```
 
 (Note: Ensure your Go bin directory (usually ~/go/bin) is added to your system's PATH so you can run the gator command from anywhere).
-
 If you have cloned the repository locally, navigate to the project directory and run:
 
-Bash
+
+```Bash
 go install .
-Configuration
+```
+
+## Configuration
 Gator requires a configuration file to connect to your PostgreSQL database.
-
 Create a file named .gatorconfig.json in your home directory (e.g., ~/.gatorconfig.json).
-
 Add your PostgreSQL database connection URL to the file in the following format:
 
-JSON
+
+```JSON
 {
   "db_url": "postgres://username:password@localhost:5432/gator_db?sslmode=disable"
 }
+```
+
 Make sure to replace username, password, and gator_db with your actual PostgreSQL credentials and database name. You must create the database in PostgreSQL before running the program.
 
-Usage
-Once installed and configured, you can use the gator CLI to manage and view your RSS feeds. Below are a few of the primary commands:
+## Usage
 
-Add a New Feed
-To start tracking a new RSS feed, use the add command followed by the feed URL:
+Gator is a multi-user system, meaning you must register and log in to manage your specific feed subscriptions. Below are the available commands:
+User Management
+Register a new user:
+```Bash
+gator register "<username>"
+```
 
-Bash
-gator add [https://example.com/rss.xml](https://example.com/rss.xml)
-List Subscriptions
-To see all the feeds you are currently subscribed to:
+Log in as an existing user:
+(This sets your active user in the configuration file)
+```Bash
+gator login "<username>"
+```
 
-Bash
-gator list
-Fetch Feeds
-To manually trigger the collector to fetch the latest posts from all your subscribed feeds and store them in the database:
+List all users:
+```Bash
+gator users
+```
 
-Bash
-gator fetch
-View Posts
-To read the latest collected posts in your terminal:
+Reset the database:
+(Warning: This clears all database records. Useful for development/testing)
+```Bash
+gator reset
+```
 
-Bash
-gator view
-You can run gator help at any time to see a full list of available commands and flags.
+Feed Management
+Note: You must be logged in to add, follow, or unfollow feeds.
+Add a new RSS feed:
+(This adds the feed to the system and automatically subscribes you to it)
+```Bash
+gator addfeed "<name>" "<url>"
+```
+
+List all available feeds:
+(Shows all feeds added to the system by any user)
+```Bash
+gator feeds
+```
+
+Follow an existing feed:
+```Bash
+gator follow "<url>"
+```
+
+View your followed feeds:
+```Bash
+gator following
+```
+
+Unfollow a feed:
+```Bash
+gator unfollow "<url>"
+```
+
+## Aggregation & Reading
+
+Run the feed aggregator:
+(This kicks off the worker that reaches out to the web and fetches new posts for all feeds in the database)
+```Bash
+gator agg <time_between_requests>
+```
+
+Example: gator agg 1m (runs every 1 minute)
+Browse your feed posts:
+(Requires login. Shows the most recently fetched posts from feeds you follow)
+```Bash
+gator browse "<limit>"
+```
+
+Example: gator browse 10 (shows the 10 most recent posts)
